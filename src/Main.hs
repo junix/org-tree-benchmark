@@ -49,6 +49,9 @@ main = do
 
 conn = connectPostgreSQL "host=192.168.99.100 dbname=hello user=postgres"
 
+exe :: String -> [SqlValue] -> Connection -> IO Integer
+exe stmt args conn = run conn stmt args
+
 newe :: Connection -> [Entity] -> IO [Integer]
 newe conn [] = return []
 newe conn es@(e:_) = do
