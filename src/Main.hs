@@ -29,6 +29,18 @@ istmt (Member _)     = "INSERT INTO member VALUES (?, ?)"
 istmt (Department _) = "INSERT INTO department VALUES (?, ?)"
 istmt (SubCompany _) = "INSERT INTO department VALUES (?, ?)"
 
+joinPath (Member _) dep = ""
+joinPath who dep = concat $
+    [ "INSERT INTO PATH (VALUES ('"++ nid, "',", sntype, ",'", pid, "',", sptype
+    , ") UNION Select '", nid, "',", sntype
+    , ", PARENT_ID, PARENT_TYPE FROM PATH WHERE NODE_ID = '", pid
+    , "' AND NODE_TYPE = ", sptype, ")"
+    ]
+    where nid    = eid who
+          sntype = (show.t2i) who
+          pid    = eid dep
+          sptype = (show.t2i) dep
+
 main = do
    cn <- conn
    dset <- quickQuery' cn "select * from path" []
@@ -52,18 +64,6 @@ neweIO es = do
    disconnect cn
    return rs
 
-joinPath (Member _) dep = ""
-joinPath who dep = concat $
-    [ "INSERT INTO PATH (VALUES ('"++ nid, "',", sntype, ",'", pid, "',", sptype
-    , ") UNION Select '", nid, "',", sntype
-    , ", PARENT_ID, PARENT_TYPE FROM PATH WHERE NODE_ID = '", pid
-    , "' AND NODE_TYPE = ", sptype, ")"
-    ]
-    where nid    = eid who
-          sntype = (show.t2i) who
-          pid    = eid dep
-          sptype = (show.t2i) dep
-
 joinConn conn who dep = do
     let rec = [seid who, st2i who, seid dep, st2i dep]
         sql = joinPath who dep
@@ -78,3 +78,23 @@ join who dep = do
    cn <- conn
    joinConn cn who dep
    disconnect cn
+
+genChildren (Department n) cnt = map (Department . (n*10+)) [0..cnt-1]
+
+itree conn level ccnt parent@(Department pid)
+    | pid > 10^level = return ()
+    | otherwise = do
+        let cs = genChildren parent ccnt
+        newe conn cs
+        mapM (flip join parent) cs
+        mapM (itree conn level ccnt) cs
+        return ()
+
+itreeIO level ccnt = do
+   cn <- conn
+   let root = Department 1
+   newe cn [root]
+   itree cn level ccnt root
+
+
+
