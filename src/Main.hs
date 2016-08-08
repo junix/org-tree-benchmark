@@ -2,6 +2,7 @@ module Main where
 
 import Database.HDBC
 import Database.HDBC.PostgreSQL
+import Data.Maybe
 
 data Entity = Department Int | SubCompany Int | Member Int deriving(Show,Eq,Read,Ord)
 
@@ -41,6 +42,8 @@ joinPath who dep = concat $
           pid    = eid dep
           sptype = (show.t2i) dep
 
+querySubCntStmt (Department _) = "select count(*) from tree where node_id in (select node_id from path where parent_id = ?)"
+
 main = do
    cn <- conn
    dset <- quickQuery' cn "select * from path" []
@@ -67,6 +70,17 @@ neweIO :: [Entity] -> IO [Integer]
 neweIO es = do
    cn <- conn
    rs <- newe cn es
+   disconnect cn
+   return rs
+
+querySubCnt conn who = do
+    rs <- quickQuery' conn (querySubCntStmt who) [seid who]
+    let cnt = listToMaybe . map fromSql. concat $ rs :: Maybe Integer
+    return cnt
+
+querySubCntIO who = do
+   cn <- conn
+   rs <- querySubCnt cn who
    disconnect cn
    return rs
 
@@ -101,6 +115,4 @@ itreeIO level ccnt = do
    let root = Department 1
    newe cn [root]
    itree cn level ccnt root
-
-
 
