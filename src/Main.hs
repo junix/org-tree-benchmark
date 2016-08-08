@@ -32,12 +32,11 @@ istmt (SubCompany _) = "INSERT INTO department VALUES (?, ?)"
 
 joinPath (Member _) dep = ""
 joinPath who dep = concat
-    [ "INSERT INTO PATH (VALUES ("
-    ,  mkFields [quote cid, ctype, quote pid, ptype], ") "
-    , "UNION SELECT "
-    , mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"]
-    , "FROM PATH WHERE "
-    , mkEqCond pid ptype, ")"
+    [ "INSERT INTO PATH( "
+    , "VALUES (", mkFields [quote cid, ctype, quote pid, ptype], ") UNION "
+    , "SELECT " , mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"], " FROM PATH WHERE"
+    , mkNEqCond pid ptype
+    , ")"
     ]
     where cid   = eid who
           ctype = (show.t2i) who
@@ -47,8 +46,8 @@ joinPath who dep = concat
 mkFields :: [String] -> String
 mkFields = intercalate ","
 
-mkEqCond nid ntype =  " NODE_ID = " ++ quote nid ++ " AND NODE_TYPE = " ++ ntype
-mkEqPCond nid ntype =  " PARENT_ID = " ++ quote nid ++ " AND PARENT_TYPE = " ++ ntype
+mkNEqCond nid ntype =  " NODE_ID = " ++ quote nid ++ " AND NODE_TYPE = " ++ ntype
+mkPEqCond nid ntype =  " PARENT_ID = " ++ quote nid ++ " AND PARENT_TYPE = " ++ ntype
 
 quote :: String -> String
 quote s = '\'' : s ++ "'"
@@ -57,8 +56,8 @@ movPath (Member _) dep = ""
 movPath who dep = concat
     [ "INSERT INTO PATH ( "
     , "VALUES (", mkFields [quote cid, ctype, quote pid, ptype], ") UNION "
-    , "(SELECT ", mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"] , " FROM PATH WHERE " , mkEqCond pid ptype, ") UNION "
-    , "(SELECT ", mkFields ["NODE_ID", "NODE_TYPE", quote pid, ptype] , " FROM PATH WHERE " , mkEqCond cid ctype, ") UNION "
+    , "(SELECT ", mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"] , " FROM PATH WHERE " , mkNEqCond pid ptype, ") UNION "
+    , "(SELECT ", mkFields ["NODE_ID", "NODE_TYPE", quote pid, ptype] , " FROM PATH WHERE " , mkPEqCond cid ctype, ") UNION "
     , "(SELECT ", mkFields ["A.NODE_ID","A.NODE_TYPE", "B.PARENT_ID", "B.PARENT_TYPE"],  " FROM PATH A, PATH B WHERE "
     , "A.PARENT_ID = ", quote cid, " AND B.NODE_ID = " , quote pid
     , ")"
