@@ -73,9 +73,9 @@ neweIO es = do
    disconnect cn
    return rs
 
-{-
-    queries
--}
+{--------------------------------------------------------------------------------------------
+               QUERIES
+--------------------------------------------------------------------------------------------}
 
 querySubCnt who conn = do
     rs <- quickQuery' conn (querySubCntStmt who) [seid who]
