@@ -42,6 +42,7 @@ joinPath who dep = concat
           sptype = (show.t2i) dep
 
 querySubCntStmt (Department _) = "select count(*) from tree where node_id in (select node_id from path where parent_id = ?)"
+queryParentsStmt = "select node_id from tree where node_id in (select parent_id from path where node_id = ?)"
 
 main = withConn (\cn -> quickQuery' cn "select * from path" [])
 
@@ -80,6 +81,13 @@ querySubCnt' who conn = do
 
 querySubCnt who = withConn (querySubCnt' who)
 
+queryParent' who conn = do
+    rs <- quickQuery' conn queryParentsStmt [seid who]
+    let ps =  map (filter (/=' ').fromSql). concat $ rs :: [String]
+    return ps
+
+queryParent who = withConn (queryParent' who)
+
 join' who dep conn = do
     let rec = [seid who, st2i who, seid dep, st2i dep]
         sql = joinPath who dep
@@ -106,15 +114,17 @@ itree' level ccnt parent@(Department pid) conn
 createTree' level ccnt conn = do
    let root = Department 1
    new' [root] conn
+   join' root root conn
    itree' level ccnt root conn
 
 createTree level ccnt  = withConn (createTree' level ccnt)
 
-clear' conn =
+clear' conn = do
     mapM_ (\stmt -> run conn stmt [])  [ "delete from path"
                                        , "delete from tree"
                                        , "delete from department"
                                        , "delete from member"
                                        ]
+    commit conn
 
 clear = withConn clear'
