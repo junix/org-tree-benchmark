@@ -73,13 +73,12 @@ withConn act = do
 {--------------------------------------------------------------------------------------------
                QUERIES
 --------------------------------------------------------------------------------------------}
-
-querySubCnt who conn = do
+querySubCnt' who conn = do
     rs <- quickQuery' conn (querySubCntStmt who) [seid who]
     let cnt = listToMaybe . map fromSql. concat $ rs :: Maybe Integer
     return cnt
 
-querySubCntIO who = withConn (querySubCnt who)
+querySubCnt who = withConn (querySubCnt' who)
 
 join' who dep conn = do
     let rec = [seid who, st2i who, seid dep, st2i dep]
