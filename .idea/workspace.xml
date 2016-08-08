@@ -27,8 +27,8 @@
       <file leaf-file-name="Main.hs" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Main.hs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1240">
-              <caret line="0" column="12" selection-start-line="0" selection-start-column="12" selection-end-line="0" selection-end-column="12" />
+            <state relative-caret-position="-883">
+              <caret line="45" column="36" selection-start-line="45" selection-start-column="36" selection-end-line="45" selection-end-column="36" />
               <folding />
             </state>
           </provider>
@@ -392,7 +392,14 @@
       <option name="project" value="LOCAL" />
       <updated>1470622473724</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="add">
+      <created>1470623089139</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1470623089139</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -580,8 +587,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Main.hs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1240">
-          <caret line="0" column="12" selection-start-line="0" selection-start-column="12" selection-end-line="0" selection-end-column="12" />
+        <state relative-caret-position="-883">
+          <caret line="45" column="36" selection-start-line="45" selection-start-column="36" selection-end-line="45" selection-end-column="36" />
           <folding />
         </state>
       </provider>

@@ -1,5 +1,4 @@
 module Main where
-
 import Database.HDBC
 import Database.HDBC.PostgreSQL
 import Data.Maybe
@@ -44,11 +43,7 @@ joinPath who dep = concat
 
 querySubCntStmt (Department _) = "select count(*) from tree where node_id in (select node_id from path where parent_id = ?)"
 
-main = do
-   cn <- conn
-   dset <- quickQuery' cn "select * from path" []
-   print dset
-   disconnect cn
+main = withConn (\cn -> quickQuery' cn "select * from path" [])
 
 conn = connectPostgreSQL "host=192.168.99.100 dbname=hello user=postgres"
 
@@ -58,18 +53,20 @@ exe stmt args conn = do
     disconnect conn
     return r
 
-newe :: Connection -> [Entity] -> IO [Integer]
-newe conn [] = return []
-newe conn es@(e:_) = do
+new' :: [Entity] -> Connection -> IO Integer
+new' [] conn = return 0
+new' es@(e:_) conn = do
     stmt <- prepare conn (istmt e)
     rs <- mapM (execute stmt . value) es
     commit conn
-    return rs
+    return (head rs)
 
-neweIO :: [Entity] -> IO [Integer]
-neweIO es = do
+new :: [Entity] -> IO Integer
+new es = withConn (new' es)
+
+withConn act = do
    cn <- conn
-   rs <- newe cn es
+   rs <- act cn
    disconnect cn
    return rs
 
@@ -84,13 +81,7 @@ querySubCnt who conn = do
 
 querySubCntIO who = withConn (querySubCnt who)
 
-withConn act = do
-   cn <- conn
-   rs <- act cn
-   disconnect cn
-   return rs
-
-joinConn conn who dep = do
+join' who dep conn = do
     let rec = [seid who, st2i who, seid dep, st2i dep]
         sql = joinPath who dep
     run conn "INSERT INTO TREE VALUES (?,?,?,?)" rec
@@ -100,25 +91,31 @@ joinConn conn who dep = do
                 run conn sql []
                 commit conn
 
-join who dep = do
-   cn <- conn
-   joinConn cn who dep
-   disconnect cn
+join who dep = withConn (join' who dep)
 
 genChildren (Department n) cnt = map (Department . (n*10+)) [0..cnt-1]
 
-itree conn level ccnt parent@(Department pid)
+itree' level ccnt parent@(Department pid) conn
     | pid > 10^level = return ()
     | otherwise = do
         let cs = genChildren parent ccnt
-        newe conn cs
-        mapM_ (`join` parent) cs
-        mapM_ (itree conn level ccnt) cs
+        new' cs conn
+        mapM_ (\c -> join' c parent conn) cs
+        mapM_ (\c -> itree' level ccnt c conn) cs
         return ()
 
-itreeIO level ccnt = do
-   cn <- conn
+createTree' level ccnt conn = do
    let root = Department 1
-   newe cn [root]
-   itree cn level ccnt root
+   new' [root] conn
+   itree' level ccnt root conn
 
+createTree level ccnt  = withConn (createTree' level ccnt)
+
+clear' conn =
+    mapM_ (\stmt -> run conn stmt [])  [ "delete from path"
+                                       , "delete from tree"
+                                       , "delete from department"
+                                       , "delete from member"
+                                       ]
+
+clear = withConn clear'
