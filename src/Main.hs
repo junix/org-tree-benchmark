@@ -83,7 +83,7 @@ querySubCnt who = withConn (querySubCnt' who)
 
 queryParent' who conn = do
     rs <- quickQuery' conn queryParentsStmt [seid who]
-    let ps =  map (filter (/=' ').fromSql). concat $ rs :: [String]
+    let ps = map sqlid2Id . concat $ rs
     return ps
 
 queryParent who = withConn (queryParent' who)
@@ -118,6 +118,10 @@ createTree' level ccnt conn = do
    itree' level ccnt root conn
 
 createTree level ccnt  = withConn (createTree' level ccnt)
+
+sqlid2Id :: SqlValue -> Integer
+sqlid2Id sid = read . filter (`elem` ['0'..'9']) $ s :: Integer
+    where s =  fromSql sid :: String
 
 clear' conn = do
     mapM_ (\stmt -> run conn stmt [])  [ "delete from path"
