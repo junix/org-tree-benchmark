@@ -31,7 +31,7 @@ istmt (Department _) = "INSERT INTO department VALUES (?, ?)"
 istmt (SubCompany _) = "INSERT INTO department VALUES (?, ?)"
 
 joinPath (Member _) dep = ""
-joinPath who dep = concat $
+joinPath who dep = concat
     [ "INSERT INTO PATH (VALUES ('"++ nid, "',", sntype, ",'", pid, "',", sptype
     , ") UNION Select '", nid, "',", sntype
     , ", PARENT_ID, PARENT_TYPE FROM PATH WHERE NODE_ID = '", pid
@@ -62,7 +62,7 @@ newe :: Connection -> [Entity] -> IO [Integer]
 newe conn [] = return []
 newe conn es@(e:_) = do
     stmt <- prepare conn (istmt e)
-    rs <- mapM (execute stmt) (map value es)
+    rs <- mapM (execute stmt . value) es
     commit conn
     return rs
 
@@ -73,14 +73,20 @@ neweIO es = do
    disconnect cn
    return rs
 
-querySubCnt conn who = do
+{-
+    queries
+-}
+
+querySubCnt who conn = do
     rs <- quickQuery' conn (querySubCntStmt who) [seid who]
     let cnt = listToMaybe . map fromSql. concat $ rs :: Maybe Integer
     return cnt
 
-querySubCntIO who = do
+querySubCntIO who = withConn (querySubCnt who)
+
+withConn act = do
    cn <- conn
-   rs <- querySubCnt cn who
+   rs <- act cn
    disconnect cn
    return rs
 
@@ -106,8 +112,8 @@ itree conn level ccnt parent@(Department pid)
     | otherwise = do
         let cs = genChildren parent ccnt
         newe conn cs
-        mapM (flip join parent) cs
-        mapM (itree conn level ccnt) cs
+        mapM_ (`join` parent) cs
+        mapM_ (itree conn level ccnt) cs
         return ()
 
 itreeIO level ccnt = do
