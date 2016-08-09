@@ -31,11 +31,11 @@ istmt (Member _)     = "INSERT INTO member VALUES (?, ?)"
 istmt (Department _) = "INSERT INTO department VALUES (?, ?)"
 istmt (SubCompany _) = "INSERT INTO department VALUES (?, ?)"
 
-joinPath (Member _) dep = ""
-joinPath who dep = concat
+joinPathSQL (Member _) dep = ""
+joinPathSQL who dep = concat
     [ "INSERT INTO PATH "
     , "SELECT ", mkFields [quote cid, ctype, quote pid, ptype], " UNION "
-    , "SELECT ", mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"], " FROM PATH WHERE ", mkNEqCond pid ptype
+    , "SELECT ", mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"], " FROM PATH WHERE ", eqNodeExp pid ptype
     ]
     where cid   = eid who
           ctype = (show.t2i) who
@@ -45,8 +45,8 @@ joinPath who dep = concat
 mkFields :: [String] -> String
 mkFields = intercalate ","
 
-mkNEqCond nid ntype =  " NODE_ID = " ++ quote nid ++ " AND NODE_TYPE = " ++ ntype
-mkPEqCond nid ntype =  " PARENT_ID = " ++ quote nid ++ " AND PARENT_TYPE = " ++ ntype
+eqNodeExp nid ntype =  " NODE_ID = " ++ quote nid ++ " AND NODE_TYPE = " ++ ntype
+eqParentExp nid ntype =  " PARENT_ID = " ++ quote nid ++ " AND PARENT_TYPE = " ++ ntype
 
 quote :: String -> String
 quote s = '\'' : s ++ "'"
@@ -55,8 +55,8 @@ movPath (Member _) dep = ""
 movPath who dep = concat
     [ "INSERT INTO PATH ( "
     , "VALUES (", mkFields [quote cid, ctype, quote pid, ptype], ") UNION "
-    , "(SELECT ", mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"] , " FROM PATH WHERE " , mkNEqCond pid ptype, ") UNION "
-    , "(SELECT ", mkFields ["NODE_ID", "NODE_TYPE", quote pid, ptype] , " FROM PATH WHERE " , mkPEqCond cid ctype, ") UNION "
+    , "(SELECT ", mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"] , " FROM PATH WHERE " , eqNodeExp pid ptype,   ") UNION "
+    , "(SELECT ", mkFields ["NODE_ID", "NODE_TYPE", quote pid, ptype],      " FROM PATH WHERE " , eqParentExp cid ctype, ") UNION "
     , "(SELECT ", mkFields ["A.NODE_ID","A.NODE_TYPE", "B.PARENT_ID", "B.PARENT_TYPE"],  " FROM PATH A, PATH B WHERE "
     , "A.PARENT_ID = ", quote cid, " AND B.NODE_ID = " , quote pid
     , ")"
@@ -66,8 +66,9 @@ movPath who dep = concat
           pid   = eid dep
           ptype = (show.t2i) dep
 
-querySubCntStmt (Department _) = "select count(*) from tree where node_id in (select node_id from path where parent_id = ?)"
-queryParentsStmt = "select node_id from tree where node_id in (select parent_id from path where node_id = ?)"
+querySubCntStmt (Department _) = "SELECT COUNT(*) FROM TREE WHERE NODE_ID IN " ++
+                                 "(SELECT NODE_ID FROM PATH WHERE PARENT_ID = ? AND NODE_ID != PARENT_ID)"
+queryParentsStmt = "SELECT NODE_ID FROM TREE WHERE NODE_ID IN (SELECT PARENT_ID FROM PATH WHERE NODE_ID = ?)"
 
 main = withConn (\cn -> quickQuery' cn "select * from path" [])
 
@@ -117,7 +118,7 @@ queryParent who = withConn (queryParent' who)
 
 join' who dep conn = do
     let rec = [seid who, st2i who, seid dep, st2i dep]
-        sql = joinPath who dep
+        sql = joinPathSQL who dep
     run conn "INSERT INTO TREE VALUES (?,?,?,?)" rec
     if null sql
         then commit conn
@@ -128,12 +129,16 @@ join' who dep conn = do
 join who dep = withConn (join' who dep)
 
 genChildren (Department n) cnt = map (Department . (n*10+)) [0..cnt-1]
+genEmplee   (Department n) cnt = map (Member . (n*10+)) [0..cnt-1]
 
 itree' level ccnt parent@(Department pid) conn
     | pid > 10^level = return ()
     | otherwise = do
         let cs = genChildren parent ccnt
+        let es = genEmplee parent ccnt
         new' cs conn
+        new' es conn
+        mapM_ (\c -> join' c parent conn) es
         mapM_ (\c -> join' c parent conn) cs
         mapM_ (\c -> itree' level ccnt c conn) cs
         return ()
@@ -144,7 +149,7 @@ createTree' level ccnt conn = do
    join' root root conn
    itree' level ccnt root conn
 
-createTree level ccnt  = withConn (createTree' level ccnt)
+createOrg level ccnt  = withConn (createTree' level ccnt)
 
 sqlid2Id :: SqlValue -> Integer
 sqlid2Id sid = read . filter (`elem` ['0'..'9']) $ s :: Integer
