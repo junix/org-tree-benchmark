@@ -25,18 +25,18 @@ ddl orgId =
     ]
     where fref x = ",FOREIGN KEY ("++x++") REFERENCES " ++ depTab orgId ++ " (ID)"
 
-createTabs' orgId conn = do
+createOrgTabs' orgId conn = do
     mapM_ (\s -> run conn s []) (ddl orgId)
     commit conn
 
-createTabs orgId = withConn (createTabs' orgId)
+createOrgTabs orgId = withConn (createOrgTabs' orgId)
 
-dropTabs' orgId conn = do
+dropOrgTabs' orgId conn = do
     let ddls = map (("drop table "++).($orgId)) [pathTab, treeTab, depTab, memTab]
     mapM_ (\s -> run conn s []) ddls
     commit conn
 
-dropTabs orgId = withConn (dropTabs' orgId)
+dropOrgTabs orgId = withConn (dropOrgTabs' orgId)
 
 
 t2i :: Entity -> Int
@@ -198,7 +198,7 @@ createTree' orgId level subCnt conn = do
    join' root root conn
    itree' level subCnt root conn
 
-createOrg orgId level ccnt  = withConn (createTree' orgId level ccnt)
+createOrg orgId level ccnt  = withConn (createTree' orgId level ccnt) >> return ()
 
 sqlid2Id :: SqlValue -> Integer
 sqlid2Id sid = read . filter (`elem` ['0'..'9']) $ s :: Integer
@@ -210,3 +210,12 @@ clear' orgId conn = do
     commit conn
 
 clear orgId = withConn (clear' orgId)
+
+createTabs' orgs cn = mapM_ (\org -> createOrgTabs' org cn) orgs
+dropTabs'   orgs cn = mapM_ (\org -> dropOrgTabs'   org cn) orgs
+
+createTabs orgs = withConn (createTabs' orgs)
+dropTabs   orgs = withConn (dropTabs'   orgs)
+
+createOrgs :: [Int] -> IO ()
+createOrgs = mapM_ (\org -> createOrg org 1 1)
