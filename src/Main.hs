@@ -217,9 +217,8 @@ dropTabs'   orgs cn = mapM_ (\org -> dropOrgTabs'   org cn) orgs
 createTabs orgs = withConn (createTabs' orgs)
 dropTabs   orgs = withConn (dropTabs'   orgs)
 
-createOrgs :: [Int] -> IO ()
-createOrgs orgs = do
+createOrgs orgs level subCnt = do
     cn <- conn
-    mapM_ (\org -> createOrg' org 1 1 cn) orgs
+    mapM_ (\org -> createOrg' org level subCnt cn) orgs
     disconnect cn
     return ()
