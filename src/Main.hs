@@ -27,7 +27,7 @@ value :: Entity -> [SqlValue]
 value e@(Member id') = [seid e, toSql id']
 value e = [seid e, st2i e]
 
-istmt (Member _)     = "INSERT INTO member VALUES (?, ?)"
+istmt (Member _)     = "INSERT INTO member     VALUES (?, ?)"
 istmt (Department _) = "INSERT INTO department VALUES (?, ?)"
 istmt (SubCompany _) = "INSERT INTO department VALUES (?, ?)"
 
@@ -55,8 +55,8 @@ movPath (Member _) dep = ""
 movPath who dep = concat
     [ "INSERT INTO PATH ( "
     , "VALUES (", mkFields [quote cid, ctype, quote pid, ptype], ") UNION "
-    , "(SELECT ", mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"] , " FROM PATH WHERE " , eqNodeExp pid ptype,   ") UNION "
-    , "(SELECT ", mkFields ["NODE_ID", "NODE_TYPE", quote pid, ptype],      " FROM PATH WHERE " , eqParentExp cid ctype, ") UNION "
+    , "(SELECT ", mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"], " FROM PATH WHERE ", eqNodeExp   pid ptype, ") UNION "
+    , "(SELECT ", mkFields ["NODE_ID", "NODE_TYPE", quote pid, ptype],     " FROM PATH WHERE ", eqParentExp cid ctype, ") UNION "
     , "(SELECT ", mkFields ["A.NODE_ID","A.NODE_TYPE", "B.PARENT_ID", "B.PARENT_TYPE"],  " FROM PATH A, PATH B WHERE "
     , "A.PARENT_ID = ", quote cid, " AND B.NODE_ID = " , quote pid
     , ")"
@@ -70,10 +70,12 @@ querySubCntStmt (Department _) = "SELECT COUNT(*) FROM TREE WHERE NODE_ID IN " +
                                  "(SELECT NODE_ID FROM PATH WHERE PARENT_ID = ? AND NODE_ID != PARENT_ID)"
 queryParentsStmt = "SELECT NODE_ID FROM TREE WHERE NODE_ID IN (SELECT PARENT_ID FROM PATH WHERE NODE_ID = ?)"
 
-main = withConn (\cn -> quickQuery' cn "select * from path" [])
+main = withConn (\cn -> quickQuery' cn "select count(*) from path" [])
 
 --conn = connectPostgreSQL "host=192.168.99.100 dbname=hello user=postgres"
-conn = connectMySQL defaultMySQLConnectInfo { mysqlHost = "127.0.0.1", mysqlUser = "jun", mysqlPassword = "" }
+conn = connectMySQL defaultMySQLConnectInfo { mysqlHost     = "127.0.0.1"
+                                            , mysqlUser     = "jun"
+                                            , mysqlPassword = "" }
 
 
 exe :: String -> [SqlValue] -> Connection -> IO Integer
