@@ -192,13 +192,13 @@ itree' level ccnt parent@(Department org pid) conn
         mapM_ (\c -> itree' level ccnt c conn) cs
         return ()
 
-createTree' orgId level subCnt conn = do
+createOrg' orgId level subCnt conn = do
    let root = Department orgId 1
    new' [root] conn
    join' root root conn
    itree' level subCnt root conn
 
-createOrg orgId level ccnt  = withConn (createTree' orgId level ccnt) >> return ()
+createOrg orgId level ccnt  = withConn (createOrg' orgId level ccnt) >> return ()
 
 sqlid2Id :: SqlValue -> Integer
 sqlid2Id sid = read . filter (`elem` ['0'..'9']) $ s :: Integer
@@ -218,4 +218,8 @@ createTabs orgs = withConn (createTabs' orgs)
 dropTabs   orgs = withConn (dropTabs'   orgs)
 
 createOrgs :: [Int] -> IO ()
-createOrgs = mapM_ (\org -> createOrg org 1 1)
+createOrgs orgs = do
+    cn <- conn
+    mapM_ (\org -> createOrg' org 1 1 cn) orgs
+    disconnect cn
+    return ()
