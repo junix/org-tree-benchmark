@@ -18,15 +18,24 @@ pathTab orgId = "PathOrg"       ++ show orgId
 ddl orgId =
     [ "CREATE TABLE " ++ depTab  orgId ++ " (ID CHAR(32) PRIMARY KEY, TYPE INT NOT NULL)"
     , "CREATE TABLE " ++ memTab  orgId ++ " (ID CHAR(32) PRIMARY KEY, AGE INT)"
-    , "CREATE TABLE " ++ treeTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT, FOREIGN KEY (PARENT_ID) REFERENCES DEPARTMENT(ID))"
-    , "CREATE TABLE " ++ pathTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT, FOREIGN KEY (NODE_ID) REFERENCES DEPARTMENT(ID) ,FOREIGN KEY (PARENT_ID) REFERENCES DEPARTMENT(ID))"
+    , "CREATE TABLE " ++ treeTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++ fkey "NODE_ID"
+    , "CREATE TABLE " ++ pathTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++ fkey "NODE_ID" ++ fkey "PARENT_ID"
     ]
+    where fkey x = ",FOREIGN KEY ("++x++") REFERENCES DEPARTMENT(ID)"
 
 createTabs' orgId conn = do
     mapM_ (\s -> run conn s []) (ddl orgId)
     commit conn
 
 createTabs orgId = withConn (createTabs' orgId)
+
+dropTabs' orgId conn = do
+    let ddls = map (("drop table "++).($orgId)) [pathTab, treeTab, depTab, memTab]
+    mapM_ (\s -> run conn s []) ddls
+    commit conn
+
+dropTabs orgId = withConn (dropTabs' orgId)
+
 
 t2i :: Entity -> Int
 t2i (Member _)     = 0
