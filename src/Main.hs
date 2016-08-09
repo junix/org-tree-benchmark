@@ -119,7 +119,7 @@ queryParentsStmt who = "SELECT NODE_ID FROM " ++ treeTab org ++ " WHERE NODE_ID 
 
 --conn = connectPostgreSQL "host=192.168.99.100 dbname=hello user=postgres"
 conn = connectMySQL defaultMySQLConnectInfo { mysqlHost     = "127.0.0.1"
-                                            , mysqlUser     = "jun"
+                                            , mysqlUser     = "root"
                                             , mysqlPassword = "" }
 
 
