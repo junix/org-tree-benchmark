@@ -1,6 +1,7 @@
 module Main where
 import Database.HDBC
-import Database.HDBC.PostgreSQL
+--import Database.HDBC.PostgreSQL
+import Database.HDBC.MySQL
 import Data.List (intercalate)
 import Data.Maybe
 
@@ -32,11 +33,9 @@ istmt (SubCompany _) = "INSERT INTO department VALUES (?, ?)"
 
 joinPath (Member _) dep = ""
 joinPath who dep = concat
-    [ "INSERT INTO PATH( "
-    , "VALUES (", mkFields [quote cid, ctype, quote pid, ptype], ") UNION "
-    , "SELECT " , mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"], " FROM PATH WHERE"
-    , mkNEqCond pid ptype
-    , ")"
+    [ "INSERT INTO PATH "
+    , "SELECT ", mkFields [quote cid, ctype, quote pid, ptype], " UNION "
+    , "SELECT ", mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"], " FROM PATH WHERE ", mkNEqCond pid ptype
     ]
     where cid   = eid who
           ctype = (show.t2i) who
@@ -72,7 +71,9 @@ queryParentsStmt = "select node_id from tree where node_id in (select parent_id 
 
 main = withConn (\cn -> quickQuery' cn "select * from path" [])
 
-conn = connectPostgreSQL "host=192.168.99.100 dbname=hello user=postgres"
+--conn = connectPostgreSQL "host=192.168.99.100 dbname=hello user=postgres"
+conn = connectMySQL defaultMySQLConnectInfo { mysqlHost = "127.0.0.1", mysqlUser = "jun", mysqlPassword = "" }
+
 
 exe :: String -> [SqlValue] -> Connection -> IO Integer
 exe stmt args conn = do

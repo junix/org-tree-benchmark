@@ -8,4 +8,4 @@ executable org-tree-perf
   hs-source-dirs:  src
   build-depends:   base
   build-depends:   HDBC
-  build-depends:   HDBC-postgresql
+  build-depends:   HDBC-mysql
