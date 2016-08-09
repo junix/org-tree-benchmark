@@ -5,9 +5,9 @@ import Database.HDBC.MySQL
 import Data.List (intercalate)
 import Data.Maybe
 
-data Entity = Department Int
-            | SubCompany Int
-            | Member Int
+data Entity = Department Int Int
+            | SubCompany Int Int
+            | Member Int Int
             deriving(Show,Eq,Read,Ord)
 
 depTab  orgId = "DepartmentOrg" ++ show orgId
@@ -18,10 +18,12 @@ pathTab orgId = "PathOrg"       ++ show orgId
 ddl orgId =
     [ "CREATE TABLE " ++ depTab  orgId ++ " (ID CHAR(32) PRIMARY KEY, TYPE INT NOT NULL)"
     , "CREATE TABLE " ++ memTab  orgId ++ " (ID CHAR(32) PRIMARY KEY, AGE INT)"
-    , "CREATE TABLE " ++ treeTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++ fref "NODE_ID" ++ ")"
-    , "CREATE TABLE " ++ pathTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++ fref "NODE_ID" ++ fref "PARENT_ID" ++ ")"
+    , "CREATE TABLE " ++ treeTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++
+      fref "PARENT_ID" ++ ")"
+    , "CREATE TABLE " ++ pathTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++
+      fref "NODE_ID" ++ fref "PARENT_ID" ++ ")"
     ]
-    where fref x = ",FOREIGN KEY ("++x++") REFERENCES " ++ depTab orgId ++ "(ID)"
+    where fref x = ",FOREIGN KEY ("++x++") REFERENCES " ++ depTab orgId ++ " (ID)"
 
 createTabs' orgId conn = do
     mapM_ (\s -> run conn s []) (ddl orgId)
@@ -38,42 +40,53 @@ dropTabs orgId = withConn (dropTabs' orgId)
 
 
 t2i :: Entity -> Int
-t2i (Member _)     = 0
-t2i (Department _) = 1
-t2i (SubCompany _) = 2
+t2i (Member _ _)     = 0
+t2i (Department _ _) = 1
+t2i (SubCompany _ _) = 2
 
 st2i :: Entity -> SqlValue
 st2i = toSql . t2i
 
 eid :: Entity -> String
-eid (Member id')     = 'm':show id'
-eid (Department id') = 'd':show id'
-eid (SubCompany id') = 's':show id'
+eid (Member _ id')     = 'm':show id'
+eid (Department _ id') = 'd':show id'
+eid (SubCompany _ id') = 's':show id'
+
+oid :: Entity -> Int
+oid (Member     org _) = org
+oid (Department org _) = org
+oid (SubCompany org _) = org
 
 seid :: Entity -> SqlValue
 seid = toSql.eid
 
 value :: Entity -> [SqlValue]
-value e@(Member id') = [seid e, toSql id']
+value e@(Member _ id') = [seid e, toSql id']
 value e = [seid e, st2i e]
 
-istmt (Member _)     = "INSERT INTO member     VALUES (?, ?)"
-istmt (Department _) = "INSERT INTO department VALUES (?, ?)"
-istmt (SubCompany _) = "INSERT INTO department VALUES (?, ?)"
+istmt (Member     org _) = "INSERT INTO " ++ memTab org ++ " VALUES (?, ?)"
+istmt (Department org _) = "INSERT INTO " ++ depTab org ++ " VALUES (?, ?)"
+istmt (SubCompany org _) = "INSERT INTO " ++ depTab org ++ " VALUES (?, ?)"
 
-joinPathSQL (Member _) dep = ""
-joinPathSQL who dep = concat
-    [ "INSERT INTO PATH "
-    , "SELECT ", mkFields [quote cid, ctype, quote pid, ptype], " UNION "
-    , "SELECT ", mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"], " FROM PATH WHERE ", eqNodeExp pid ptype
-    ]
-    where cid   = eid who
-          ctype = (show.t2i) who
-          pid   = eid dep
-          ptype = (show.t2i) dep
+joinPathSQL (Member _ _) dep = ""
+joinPathSQL who dep
+    | oid who /= oid dep = ""
+    | otherwise = concat
+        [ "INSERT INTO ", ptab, " "
+        , "SELECT ", mkFields [quote cid, ctype, quote pid, ptype], " UNION "
+        , "SELECT ", mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"], " FROM ", ptab, " "
+        , "WHERE ", eqNodeExp pid ptype
+        ]
+        where ptab = pathTab.oid $ dep
+              cid   = eid who
+              ctype = (show.t2i) who
+              pid   = eid dep
+              ptype = (show.t2i) dep
 
 mkFields :: [String] -> String
 mkFields = intercalate ","
+
+main = return ()
 
 eqNodeExp   nid ntype =  " NODE_ID = "   ++ quote nid ++ " AND NODE_TYPE = "   ++ ntype
 eqParentExp nid ntype =  " PARENT_ID = " ++ quote nid ++ " AND PARENT_TYPE = " ++ ntype
@@ -81,7 +94,7 @@ eqParentExp nid ntype =  " PARENT_ID = " ++ quote nid ++ " AND PARENT_TYPE = " +
 quote :: String -> String
 quote s = '\'' : s ++ "'"
 
-movPath (Member _) dep = ""
+movPath (Member _ _) dep = ""
 movPath who dep = concat
     [ "INSERT INTO PATH ( "
     , "VALUES (", mkFields [quote cid, ctype, quote pid, ptype], ") UNION "
@@ -96,11 +109,13 @@ movPath who dep = concat
           pid   = eid dep
           ptype = (show.t2i) dep
 
-querySubCntStmt (Department _) = "SELECT COUNT(*) FROM TREE WHERE NODE_ID IN " ++
-                                 "(SELECT NODE_ID FROM PATH WHERE PARENT_ID = ? AND NODE_ID != PARENT_ID)"
-queryParentsStmt = "SELECT NODE_ID FROM TREE WHERE NODE_ID IN (SELECT PARENT_ID FROM PATH WHERE NODE_ID = ?)"
+querySubCntStmt (Department orgId _) = "SELECT COUNT(*) FROM " ++ treeTab orgId ++ " WHERE NODE_ID IN " ++
+                                       "(SELECT NODE_ID FROM " ++ pathTab orgId ++
+                                       " WHERE PARENT_ID = ? AND NODE_ID != PARENT_ID)"
 
-main = withConn (\cn -> quickQuery' cn "select count(*) from path" [])
+queryParentsStmt who = "SELECT NODE_ID FROM " ++ treeTab org ++ " WHERE NODE_ID IN " ++
+                        "(SELECT PARENT_ID FROM " ++ pathTab org ++" WHERE NODE_ID = ?)"
+    where org = oid who
 
 --conn = connectPostgreSQL "host=192.168.99.100 dbname=hello user=postgres"
 conn = connectMySQL defaultMySQLConnectInfo { mysqlHost     = "127.0.0.1"
@@ -142,7 +157,7 @@ querySubCnt' who conn = do
 querySubCnt who = withConn (querySubCnt' who)
 
 queryParent' who conn = do
-    rs <- quickQuery' conn queryParentsStmt [seid who]
+    rs <- quickQuery' conn (queryParentsStmt who) [seid who]
     let ps = map sqlid2Id . concat $ rs
     return ps
 
@@ -151,7 +166,9 @@ queryParent who = withConn (queryParent' who)
 join' who dep conn = do
     let rec = [seid who, st2i who, seid dep, st2i dep]
         sql = joinPathSQL who dep
-    run conn "INSERT INTO TREE VALUES (?,?,?,?)" rec
+        tab = treeTab.oid $ dep
+        isql= "INSERT INTO " ++ tab ++ " VALUES (?,?,?,?)"
+    run conn isql rec
     if null sql
         then commit conn
         else do
@@ -160,10 +177,10 @@ join' who dep conn = do
 
 join who dep = withConn (join' who dep)
 
-genChildren (Department n) cnt = map (Department . (n*10+)) [0..cnt-1]
-genEmplee   (Department n) cnt = map (Member . (n*10+)) [0..cnt-1]
+genChildren (Department org n) cnt = map (Department org . (n*10+)) [0..cnt-1]
+genEmplee   (Department org n) cnt = map (Member org. (n*10+)) [0..cnt-1]
 
-itree' level ccnt parent@(Department pid) conn
+itree' level ccnt parent@(Department org pid) conn
     | pid > 10^level = return ()
     | otherwise = do
         let cs = genChildren parent ccnt
@@ -175,13 +192,13 @@ itree' level ccnt parent@(Department pid) conn
         mapM_ (\c -> itree' level ccnt c conn) cs
         return ()
 
-createTree' level ccnt conn = do
-   let root = Department 1
+createTree' orgId level subCnt conn = do
+   let root = Department orgId 1
    new' [root] conn
    join' root root conn
-   itree' level ccnt root conn
+   itree' level subCnt root conn
 
-createOrg level ccnt  = withConn (createTree' level ccnt)
+createOrg orgId level ccnt  = withConn (createTree' orgId level ccnt)
 
 sqlid2Id :: SqlValue -> Integer
 sqlid2Id sid = read . filter (`elem` ['0'..'9']) $ s :: Integer
