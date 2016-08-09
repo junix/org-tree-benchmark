@@ -18,8 +18,8 @@ pathTab orgId = "PathOrg"       ++ show orgId
 ddl orgId =
     [ "CREATE TABLE " ++ depTab  orgId ++ " (ID CHAR(32) PRIMARY KEY, TYPE INT NOT NULL)"
     , "CREATE TABLE " ++ memTab  orgId ++ " (ID CHAR(32) PRIMARY KEY, AGE INT)"
-    , "CREATE TABLE " ++ treeTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++ fref "NODE_ID"
-    , "CREATE TABLE " ++ pathTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++ fref "NODE_ID" ++ fref "PARENT_ID"
+    , "CREATE TABLE " ++ treeTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++ fref "NODE_ID" ++ ")"
+    , "CREATE TABLE " ++ pathTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++ fref "NODE_ID" ++ fref "PARENT_ID" ++ ")"
     ]
     where fref x = ",FOREIGN KEY ("++x++") REFERENCES " ++ depTab orgId ++ "(ID)"
 
@@ -75,7 +75,7 @@ joinPathSQL who dep = concat
 mkFields :: [String] -> String
 mkFields = intercalate ","
 
-eqNodeExp nid ntype =  " NODE_ID = " ++ quote nid ++ " AND NODE_TYPE = " ++ ntype
+eqNodeExp   nid ntype =  " NODE_ID = "   ++ quote nid ++ " AND NODE_TYPE = "   ++ ntype
 eqParentExp nid ntype =  " PARENT_ID = " ++ quote nid ++ " AND PARENT_TYPE = " ++ ntype
 
 quote :: String -> String
@@ -187,12 +187,9 @@ sqlid2Id :: SqlValue -> Integer
 sqlid2Id sid = read . filter (`elem` ['0'..'9']) $ s :: Integer
     where s =  fromSql sid :: String
 
-clear' conn = do
-    mapM_ (\stmt -> run conn stmt [])  [ "delete from path"
-                                       , "delete from tree"
-                                       , "delete from department"
-                                       , "delete from member"
-                                       ]
+clear' orgId conn = do
+    let exps = map (("DELETE FROM "++) . ($orgId)) [pathTab, treeTab, depTab, memTab]
+    mapM_ (\stmt -> run conn stmt []) exps
     commit conn
 
-clear = withConn clear'
+clear orgId = withConn (clear' orgId)
