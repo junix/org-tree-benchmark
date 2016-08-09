@@ -18,10 +18,10 @@ pathTab orgId = "PathOrg"       ++ show orgId
 ddl orgId =
     [ "CREATE TABLE " ++ depTab  orgId ++ " (ID CHAR(32) PRIMARY KEY, TYPE INT NOT NULL)"
     , "CREATE TABLE " ++ memTab  orgId ++ " (ID CHAR(32) PRIMARY KEY, AGE INT)"
-    , "CREATE TABLE " ++ treeTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++ fkey "NODE_ID"
-    , "CREATE TABLE " ++ pathTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++ fkey "NODE_ID" ++ fkey "PARENT_ID"
+    , "CREATE TABLE " ++ treeTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++ fref "NODE_ID"
+    , "CREATE TABLE " ++ pathTab orgId ++ " (NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++ fref "NODE_ID" ++ fref "PARENT_ID"
     ]
-    where fkey x = ",FOREIGN KEY ("++x++") REFERENCES DEPARTMENT(ID)"
+    where fref x = ",FOREIGN KEY ("++x++") REFERENCES " ++ depTab orgId ++ "(ID)"
 
 createTabs' orgId conn = do
     mapM_ (\s -> run conn s []) (ddl orgId)
