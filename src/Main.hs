@@ -230,7 +230,7 @@ createOrgs orgs level subCnt = do
 
 parCreateOrgs oss level subCnt = do
     m <- newManager
-    parCreateOrg' m oss level subCnt
+    parCreateOrgs' m oss level subCnt
 
 parCreateOrgs' manager [] level subCnt = waitAll manager
 parCreateOrgs' manager (os:oss) level subCnt = do
@@ -238,7 +238,6 @@ parCreateOrgs' manager (os:oss) level subCnt = do
     forkManaged manager act
     parCreateOrgs' manager oss level subCnt
 
--- file: ch24/NiceFork.hs
 newtype ThreadManager = Mgr (MVar (M.Map ThreadId (MVar ThreadStatus))) deriving (Eq)
 
 -- | Create a new thread manager.
@@ -281,7 +280,6 @@ waitAll :: ThreadManager -> IO ()
 waitAll (Mgr mgr) = modifyMVar mgr elems >>= mapM_ takeMVar
     where elems m = return (M.empty, M.elems m)
 
--- file: ch24/NiceFork.hs
 waitFor2 (Mgr mgr) tid =
   join . modifyMVar mgr $ \m ->
     return $ case M.updateLookupWithKey (\_ _ -> Nothing) tid m of
