@@ -233,15 +233,13 @@ parCreateOrgs oss level subCnt = parRun $
     map (\os ->createOrgs os level subCnt) oss
 
 -- range split
-splitByInterval xs step
+splitByStep step xs
     | length xs <= step = [xs]
-    | otherwise = left : splitByInterval right step
+    | otherwise = left : splitByStep step right
     where (left, right) = splitAt step xs
 
-splitToN rs cnt = go rs cnt
+splitToCnt rs cnt = go rs cnt
     where step = length rs `quot` cnt
           go xs 1 = [xs]
           go xs n = left : go right (n-1)
              where (left, right) = splitAt step xs
-
-
