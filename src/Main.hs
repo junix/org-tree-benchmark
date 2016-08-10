@@ -228,15 +228,16 @@ createOrgs orgs level subCnt = do
     disconnect cn
     return ()
 
-parCreateOrgs oss level subCnt = do
-    m <- newManager
-    parCreateOrgs' m oss level subCnt
+parCreateTabs oss = parRun (map createTabs oss)
 
-parCreateOrgs' manager [] level subCnt = waitAll manager
-parCreateOrgs' manager (os:oss) level subCnt = do
-    let act = createOrgs os level subCnt
-    forkManaged manager act
-    parCreateOrgs' manager oss level subCnt
+parCreateOrgs oss level subCnt = do
+    let acts = map (\os ->createOrgs os level subCnt) oss
+    parRun acts
+
+parRun acts = do
+    m <- newManager
+    mapM_ (forkManaged m) acts
+    waitAll m
 
 newtype ThreadManager = Mgr (MVar (M.Map ThreadId (MVar ThreadStatus))) deriving (Eq)
 
