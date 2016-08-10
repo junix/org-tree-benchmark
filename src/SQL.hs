@@ -3,10 +3,12 @@ import Database.HDBC
 import Org
 import Data.List (intercalate)
 
-depTab  orgId = "DepartmentOrg" ++ show orgId
-memTab  orgId = "MemberOrg"     ++ show orgId
-treeTab orgId = "TreeOrg"       ++ show orgId
-pathTab orgId = "PathOrg"       ++ show orgId
+shard orgId = orgId `rem` 200
+
+depTab  orgId = "DepartmentOrg" ++ (show.shard) orgId
+memTab  orgId = "MemberOrg"     ++ (show.shard) orgId
+treeTab orgId = "TreeOrg"       ++ (show.shard) orgId
+pathTab orgId = "PathOrg"       ++ (show.shard) orgId
 
 ddl orgId =
     [ "CREATE TABLE " ++ depTab  orgId ++ " (ID CHAR(32) PRIMARY KEY, TYPE INT NOT NULL)"
