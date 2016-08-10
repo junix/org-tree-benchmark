@@ -1,8 +1,6 @@
 module Main where
 import Database.HDBC
---import Database.HDBC.PostgreSQL
 import Database.HDBC.MySQL
-import Data.List (intercalate)
 import Data.Maybe
 import NiceFork(parRun)
 import SplitR
@@ -137,4 +135,3 @@ parDropTabs oss = parRun (map dropTabs oss)
 
 parCreateOrgs oss level subCnt = parRun $
     map (\os ->createOrgs os level subCnt) oss
-
