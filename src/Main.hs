@@ -228,10 +228,15 @@ createOrgs orgs level subCnt = do
     disconnect cn
     return ()
 
+parCreateOrgs oss level subCnt = do
+    m <- newManager
+    parCreateOrg' m oss level subCnt
 
-
-
-
+parCreateOrgs' manager [] level subCnt = waitAll manager
+parCreateOrgs' manager (os:oss) level subCnt = do
+    let act = createOrgs os level subCnt
+    forkManaged manager act
+    parCreateOrgs' manager oss level subCnt
 
 -- file: ch24/NiceFork.hs
 newtype ThreadManager = Mgr (MVar (M.Map ThreadId (MVar ThreadStatus))) deriving (Eq)
