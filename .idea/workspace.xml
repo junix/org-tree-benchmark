@@ -37,8 +37,8 @@
       <file leaf-file-name="SQL.hs" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/SQL.hs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="951">
-              <caret line="90" column="11" selection-start-line="90" selection-start-column="11" selection-end-line="90" selection-end-column="11" />
+            <state relative-caret-position="-1449">
+              <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -425,13 +425,6 @@
       <option name="presentableId" value="Default" />
       <updated>1470273916037</updated>
     </task>
-    <task id="LOCAL-00015" summary="add">
-      <created>1470643268526</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1470643268526</updated>
-    </task>
     <task id="LOCAL-00016" summary="add">
       <created>1470643571878</created>
       <option name="number" value="00016" />
@@ -768,7 +761,14 @@
       <option name="project" value="LOCAL" />
       <updated>1470886461989</updated>
     </task>
-    <option name="localTasksCounter" value="64" />
+    <task id="LOCAL-00064" summary="并行创建表">
+      <created>1470899563153</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1470899563153</updated>
+    </task>
+    <option name="localTasksCounter" value="65" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1125,8 +1125,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/SQL.hs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="951">
-          <caret line="90" column="11" selection-start-line="90" selection-start-column="11" selection-end-line="90" selection-end-column="11" />
+        <state relative-caret-position="-1449">
+          <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
           <folding />
         </state>
       </provider>

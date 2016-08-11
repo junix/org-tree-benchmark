@@ -8,10 +8,10 @@ shardSize = 100
 
 shard orgId = orgId `rem` shardSize
 
-depTab  orgId = "DepartmentOrg" ++ (show.shard) orgId
-memTab  orgId = "MemberOrg"     ++ (show.shard) orgId
-treeTab orgId = "TreeOrg"       ++ (show.shard) orgId
-pathTab orgId = "PathOrg"       ++ (show.shard) orgId
+depTab  orgId = "department" ++ (show.shard) orgId
+memTab  orgId = "member"     ++ (show.shard) orgId
+treeTab orgId = "tree"       ++ (show.shard) orgId
+pathTab orgId = "path"       ++ (show.shard) orgId
 
 data FieldType  = C Int | I
 data Constraint = NOT_NULL | KEY
