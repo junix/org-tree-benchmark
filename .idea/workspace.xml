@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="929552b8-e492-4a0c-bc9a-e83cf51b0a92" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Org.hs" afterPath="$PROJECT_DIR$/src/Org.hs" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/SQL.hs" afterPath="$PROJECT_DIR$/src/SQL.hs" />
     </list>
     <ignored path="org-tree-perf.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -27,8 +27,8 @@
       <file leaf-file-name="Main.hs" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Main.hs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="190">
-              <caret line="73" column="21" selection-start-line="73" selection-start-column="17" selection-end-line="73" selection-end-column="22" />
+            <state relative-caret-position="0">
+              <caret line="0" column="16" selection-start-line="0" selection-start-column="16" selection-end-line="0" selection-end-column="16" />
               <folding />
             </state>
           </provider>
@@ -44,11 +44,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="SQL.hs" pinned="false" current-in-tab="false">
+      <file leaf-file-name="SQL.hs" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/SQL.hs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="294">
-              <caret line="14" column="68" selection-start-line="14" selection-start-column="68" selection-end-line="14" selection-end-column="68" />
+            <state relative-caret-position="378">
+              <caret line="43" column="8" selection-start-line="43" selection-start-column="8" selection-end-line="43" selection-end-column="8" />
               <folding />
             </state>
           </provider>
@@ -64,7 +64,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Org.hs" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Org.hs" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Org.hs">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="504">
@@ -91,8 +91,8 @@
         <option value="$PROJECT_DIR$/src/NiceFork.hs" />
         <option value="$PROJECT_DIR$/src/SplitR.hs" />
         <option value="$PROJECT_DIR$/src/Main.hs" />
-        <option value="$PROJECT_DIR$/src/SQL.hs" />
         <option value="$PROJECT_DIR$/src/Org.hs" />
+        <option value="$PROJECT_DIR$/src/SQL.hs" />
       </list>
     </option>
   </component>
@@ -455,13 +455,6 @@
       <option name="presentableId" value="Default" />
       <updated>1470273916037</updated>
     </task>
-    <task id="LOCAL-00002" summary="add">
-      <created>1470277092634</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1470277092634</updated>
-    </task>
     <task id="LOCAL-00003" summary="add">
       <created>1470300657222</created>
       <option name="number" value="00003" />
@@ -798,7 +791,14 @@
       <option name="project" value="LOCAL" />
       <updated>1470882620551</updated>
     </task>
-    <option name="localTasksCounter" value="51" />
+    <task id="LOCAL-00051" summary="并行创建表">
+      <created>1470882661803</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1470882661803</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1137,26 +1137,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/Org.hs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="504">
+          <caret line="24" column="21" selection-start-line="24" selection-start-column="21" selection-end-line="24" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/Main.hs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="190">
-          <caret line="73" column="21" selection-start-line="73" selection-start-column="17" selection-end-line="73" selection-end-column="22" />
+        <state relative-caret-position="0">
+          <caret line="0" column="16" selection-start-line="0" selection-start-column="16" selection-end-line="0" selection-end-column="16" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/SQL.hs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="294">
-          <caret line="14" column="68" selection-start-line="14" selection-start-column="68" selection-end-line="14" selection-end-column="68" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Org.hs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="504">
-          <caret line="24" column="21" selection-start-line="24" selection-start-column="21" selection-end-line="24" selection-end-column="21" />
+        <state relative-caret-position="378">
+          <caret line="43" column="8" selection-start-line="43" selection-start-column="8" selection-end-line="43" selection-end-column="8" />
           <folding />
         </state>
       </provider>

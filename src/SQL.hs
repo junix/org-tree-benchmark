@@ -40,7 +40,7 @@ joinPathSQL who dep
     | oid who /= oid dep = ""
     | otherwise = concat
         [ "INSERT INTO ", ptab, " "
-        , "SELECT ", mkFields [orgid, quote cid, ctype, quote pid, ptype], " UNION "
+        , "SELECT ", mkFields [quote orgid, quote cid, ctype, quote pid, ptype], " UNION "
         , "SELECT ", mkFields ["ORG_ID", quote cid, ctype, "PARENT_ID", "PARENT_TYPE"], " FROM ", ptab, " "
         , "WHERE ", eqNodeExp orgid pid ptype
         ]
