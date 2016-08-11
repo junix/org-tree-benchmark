@@ -126,6 +126,9 @@ dropTabs'   orgs cn = mapM_ (\org -> dropOrgTabs'   org cn) orgs
 createTabs orgs = withConn (createTabs' orgs)
 dropTabs   orgs = withConn (dropTabs'   orgs)
 
+createAllTabs = withConn (createTabs' [0..shardSize])
+dropAllTabs = withConn (dropTabs' [0..shardSize])
+
 createOrgs orgs level subCnt = do
     cn <- conn
     mapM_ (\org -> createOrg' org level subCnt cn) orgs
@@ -133,9 +136,5 @@ createOrgs orgs level subCnt = do
     return ()
 
 -- parallel operations
-parCreateTabs oss = parRun (map createTabs oss)
-
-parDropTabs oss = parRun (map dropTabs oss)
-
 parCreateOrgs oss level subCnt = parRun $
     map (\os ->createOrgs os level subCnt) oss
