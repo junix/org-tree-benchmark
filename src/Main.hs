@@ -84,13 +84,13 @@ join' who dep conn = do
 joinIn who dep = withConn (join' who dep)
 
 genChildren (Department org n) cnt = map (Department org . (n*10+)) [0..cnt-1]
-genEmplee   (Department org n) cnt = map (Member org. (n*10+)) [0..cnt-1]
+genEmployee (Department org n) cnt = map (Member org. (n*10+)) [0..cnt-1]
 
 itree' level ccnt parent@(Department org pid) conn
     | pid > 10^level = return ()
     | otherwise = do
         let cs = genChildren parent ccnt
-        let es = genEmplee parent ccnt
+        let es = genEmployee parent ccnt
         new' cs conn
         new' es conn
         mapM_ (\c -> join' c parent conn) es
