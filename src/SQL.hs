@@ -13,15 +13,84 @@ memTab  orgId = "MemberOrg"     ++ (show.shard) orgId
 treeTab orgId = "TreeOrg"       ++ (show.shard) orgId
 pathTab orgId = "PathOrg"       ++ (show.shard) orgId
 
-ddl orgId =
-    [ "CREATE TABLE " ++ depTab  orgId ++ " (ID CHAR(32) PRIMARY KEY, ORG_ID CHAR(32), TYPE INT NOT NULL)"
-    , "CREATE TABLE " ++ memTab  orgId ++ " (ID CHAR(32) PRIMARY KEY, ORG_ID CHAR(32), AGE INT)"
-    , "CREATE TABLE " ++ treeTab orgId ++ " (ORG_ID CHAR(32), NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++
-      fref "PARENT_ID" ++ ")"
-    , "CREATE TABLE " ++ pathTab orgId ++ " (ORG_ID CHAR(32), NODE_ID CHAR(32), NODE_TYPE INT, PARENT_ID CHAR(32), PARENT_TYPE INT" ++
-      fref "NODE_ID" ++ fref "PARENT_ID" ++ ")"
-    ]
-    where fref x = ",FOREIGN KEY ("++x++") REFERENCES " ++ depTab orgId ++ " (ID)"
+data FieldType  = C Int | I
+data Constraint = NOT_NULL | KEY
+data Field      = CField String FieldType [Constraint] | Field String FieldType
+data FK         = FK { field   :: String
+                     , refTab  :: String
+                     , refName :: String
+                     } deriving (Show)
+data Tab        = Tab { name          :: String
+                      , fields        :: [Field]
+                      , foreign_keys  :: [FK]
+                      } deriving (Show)
+
+type OrgId = Integer
+type ShardId = Integer
+
+instance Show FieldType where
+    show (C n) = "CHAR(" ++ show n ++ ")"
+    show I = "INT"
+
+instance Show Constraint where
+    show NOT_NULL = "NOT NULL"
+    show KEY = "PRIMARY KEY"
+
+instance Show Field where
+   show (CField name fieldType cs) = name ++ " " ++ show fieldType ++ " " ++  (intercalate " " . map show $ cs)
+   show (Field name fieldType) = name ++ " " ++ show fieldType
+
+department :: ShardId -> Tab
+department shard = Tab { name   = "department" ++ show shard
+                       , fields = [ CField "ID"     (C 32)  [KEY]
+                                  , CField "ORG_ID" (C 32)  [NOT_NULL]
+                                  , CField "TYPE"   I       [NOT_NULL]
+                                  ]
+                       , foreign_keys = []
+                       }
+
+member :: ShardId -> Tab
+member shard = Tab { name   = "member" ++ show shard
+                   , fields = [ CField "ID"      (C 32) [KEY]
+                              , CField "ORG_ID"  (C 32) [NOT_NULL]
+                              , CField "AGE"     I      [NOT_NULL]
+                              ]
+                   , foreign_keys = []
+                   }
+
+tree :: ShardId -> Tab
+tree shard = Tab { name   = "tree" ++ show shard
+                 , fields = [ CField "ORG_ID"      (C 32) [NOT_NULL]
+                            , CField "NODE_ID"     (C 32) [NOT_NULL]
+                            , CField "NODE_TYPE"   I      [NOT_NULL]
+                            , CField "PARENT_ID"   (C 32) [NOT_NULL]
+                            , CField "PARENT_TYPE" I      [NOT_NULL]
+                            ]
+                   , foreign_keys = [FK { field   = "PARENT_ID", refTab  = "department"++show shard, refName = "ID"}]
+                   }
+
+path :: ShardId -> Tab
+path shard = Tab { name   = "path" ++ show shard
+                 , fields = [ CField "ORG_ID"      (C 32) [NOT_NULL]
+                            , CField "NODE_ID"     (C 32) [NOT_NULL]
+                            , CField "NODE_TYPE"   I      [NOT_NULL]
+                            , CField "PARENT_ID"   (C 32) [NOT_NULL]
+                            , CField "PARENT_TYPE" I      [NOT_NULL]
+                            ]
+                   , foreign_keys = [ FK { field   = "PARENT_ID", refTab  = "department"++show shard, refName = "ID" }
+                                    , FK { field   = "NODE_ID",   refTab  = "department"++show shard, refName = "ID" }
+                                    ]
+                   }
+
+ddlOf :: Tab -> String
+ddlOf (Tab { name = tabName, fields = fs, foreign_keys = fks}) =
+        "CREATE TABLE " ++ tabName ++ " (" ++
+        (intercalate "," . map show $ fs) ++
+        concatMap fref fks ++ ")"
+    where fref (FK { field = f, refTab = t, refName = n}) =
+            ",FOREIGN KEY (" ++ f ++ ") REFERENCES " ++ t ++ " (" ++ n ++ ")"
+
+ddl orgId = map ddlOf. map ($orgId) $ [department, member, tree, path]
 
 st2i :: Entity -> SqlValue
 st2i = toSql . t2i

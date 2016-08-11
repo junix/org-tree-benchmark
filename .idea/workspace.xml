@@ -27,18 +27,8 @@
       <file leaf-file-name="Main.hs" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Main.hs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="861">
-              <caret line="41" column="6" selection-start-line="41" selection-start-column="6" selection-end-line="41" selection-end-column="6" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Org.hs" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/Org.hs">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="378">
-              <caret line="18" column="23" selection-start-line="18" selection-start-column="23" selection-end-line="18" selection-end-column="23" />
+            <state relative-caret-position="2184">
+              <caret line="118" column="4" selection-start-line="118" selection-start-column="4" selection-end-line="118" selection-end-column="4" />
               <folding />
             </state>
           </provider>
@@ -47,8 +37,8 @@
       <file leaf-file-name="SQL.hs" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/SQL.hs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="126">
-              <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
+            <state relative-caret-position="951">
+              <caret line="90" column="11" selection-start-line="90" selection-start-column="11" selection-end-line="90" selection-end-column="11" />
               <folding />
             </state>
           </provider>
@@ -435,20 +425,6 @@
       <option name="presentableId" value="Default" />
       <updated>1470273916037</updated>
     </task>
-    <task id="LOCAL-00013" summary="add">
-      <created>1470627655225</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1470627655225</updated>
-    </task>
-    <task id="LOCAL-00014" summary="add">
-      <created>1470627994633</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1470627994633</updated>
-    </task>
     <task id="LOCAL-00015" summary="add">
       <created>1470643268526</created>
       <option name="number" value="00015" />
@@ -778,12 +754,26 @@
       <option name="project" value="LOCAL" />
       <updated>1470886184887</updated>
     </task>
-    <option name="localTasksCounter" value="62" />
+    <task id="LOCAL-00062" summary="并行创建表">
+      <created>1470886406329</created>
+      <option name="number" value="00062" />
+      <option name="presentableId" value="LOCAL-00062" />
+      <option name="project" value="LOCAL" />
+      <updated>1470886406329</updated>
+    </task>
+    <task id="LOCAL-00063" summary="并行创建表">
+      <created>1470886461989</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1470886461989</updated>
+    </task>
+    <option name="localTasksCounter" value="64" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="47" y="23" width="1393" height="877" extended-state="6" />
-    <editor active="true" />
+    <frame x="47" y="23" width="1393" height="877" extended-state="0" />
+    <editor active="false" />
     <layout>
       <window_info id="PlantUML" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -792,7 +782,7 @@
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.21910828" sideWeight="0.50259453" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Haskell Tools Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21401274" sideWeight="0.4974055" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21401274" sideWeight="0.4974055" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.37834394" sideWeight="0.4974055" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15122312" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -1117,14 +1107,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/Main.hs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="861">
-          <caret line="41" column="6" selection-start-line="41" selection-start-column="6" selection-end-line="41" selection-end-column="6" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/Org.hs">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="378">
@@ -1133,10 +1115,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/Main.hs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2184">
+          <caret line="118" column="4" selection-start-line="118" selection-start-column="4" selection-end-line="118" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/SQL.hs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="126">
-          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
+        <state relative-caret-position="951">
+          <caret line="90" column="11" selection-start-line="90" selection-start-column="11" selection-end-line="90" selection-end-column="11" />
           <folding />
         </state>
       </provider>
