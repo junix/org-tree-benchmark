@@ -110,6 +110,7 @@ sqlid2Id :: SqlValue -> Integer
 sqlid2Id sid = read . filter (`elem` ['0'..'9']) $ s :: Integer
     where s =  fromSql sid :: String
 
+clear' :: Integer -> Connection -> IO ()
 clear' orgId conn = do
     let exps = [ "DELETE FROM " ++ tab ++ " WHERE ORG_ID=" ++ (quote.i2soid) orgId
                | tab <- map ($orgId) [pathTab, treeTab, depTab, memTab]
