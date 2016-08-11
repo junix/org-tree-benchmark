@@ -103,6 +103,7 @@ createOrg' orgId level subCnt conn = do
    new' [root] conn
    join' root root conn
    itree' level subCnt root conn
+   print $ "create org:" ++ show orgId
 
 createOrg orgId level ccnt  = withConn (createOrg' orgId level ccnt) >> return ()
 
