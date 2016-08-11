@@ -12,13 +12,13 @@ t2i (SubCompany _ _) = 2
 
 
 eid :: Entity -> String
-eid (Member _ id')     = 'm':show id'
-eid (Department _ id') = 'd':show id'
-eid (SubCompany _ id') = 's':show id'
+eid e@(Member _ id')     = soid e ++ 'm':show id'
+eid e@(Department _ id') = soid e ++ 'd':show id'
+eid e@(SubCompany _ id') = soid e ++ 's':show id'
 
 oid :: Entity -> Int
 oid (Member     org _) = org
 oid (Department org _) = org
 oid (SubCompany org _) = org
 
-soid = show.oid
+soid = 'o':show.oid
