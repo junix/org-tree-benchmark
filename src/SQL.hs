@@ -80,13 +80,12 @@ movPath who dep = concat
 
 querySubCntStmt e@(Department orgId _) =
     "SELECT COUNT(*) FROM " ++ treeTab orgId ++ " WHERE ORG_ID = " ++ (quote.soid) e ++
-    " AND NODE_ID IN " ++ "(SELECT NODE_ID FROM " ++ pathTab orgId ++
-    " WHERE PARENT_ID = ? AND NODE_ID != PARENT_ID)"
+    " AND NODE_ID IN " ++
+    "(SELECT NODE_ID FROM " ++ pathTab orgId ++ " WHERE PARENT_ID = ? AND NODE_ID != PARENT_ID)"
 
-
-queryParentsStmt who = "SELECT NODE_ID FROM " ++ treeTab org ++ " WHERE ORG_ID = " ++ quote orgid ++
-                       " AND NODE_ID IN " ++
-                        "(SELECT PARENT_ID FROM " ++ pathTab org ++" WHERE NODE_ID = ?)"
-    where org = oid who
+queryParentsStmt who =
+    "SELECT NODE_ID FROM " ++ treeTab org ++ " WHERE ORG_ID = " ++ quote orgid ++
+    " AND NODE_ID IN " ++ "(SELECT PARENT_ID FROM " ++ pathTab org ++" WHERE NODE_ID = ?)"
+    where org   = oid who
           orgid = soid who
 
