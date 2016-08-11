@@ -4,7 +4,7 @@ import Database.HDBC
 import Org
 import Data.List (intercalate)
 
-shard orgId = orgId `rem` 200
+shard orgId = orgId `rem` 10
 
 depTab  orgId = "DepartmentOrg" ++ (show.shard) orgId
 memTab  orgId = "MemberOrg"     ++ (show.shard) orgId
