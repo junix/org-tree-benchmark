@@ -28,8 +28,8 @@ seid :: Entity -> SqlValue
 seid = toSql.eid
 
 value :: Entity -> [SqlValue]
-value e@(Member _ id') = [(toSql.soid) e, seid e, toSql id']
-value e = [(toSql.soid) e, seid e, st2i e]
+value e@(Member _ id') = [seid e, (toSql.soid) e, toSql id']
+value e = [seid e, (toSql.soid) e, st2i e]
 
 istmt (Member     org _) = "INSERT INTO " ++ memTab org ++ " VALUES (?, ?, ?)"
 istmt (Department org _) = "INSERT INTO " ++ depTab org ++ " VALUES (?, ?, ?)"
