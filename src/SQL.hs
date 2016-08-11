@@ -142,8 +142,7 @@ movPath who dep = concat
     , "(SELECT ", mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"], " FROM PATH WHERE ", eqNodeExp   orgid pid ptype, ") UNION "
     , "(SELECT ", mkFields ["NODE_ID", "NODE_TYPE", quote pid, ptype],     " FROM PATH WHERE ", eqParentExp orgid cid ctype, ") UNION "
     , "(SELECT ", mkFields ["A.NODE_ID","A.NODE_TYPE", "B.PARENT_ID", "B.PARENT_TYPE"],  " FROM PATH A, PATH B WHERE "
-    , "A.PARENT_ID = ", quote cid, " AND B.NODE_ID = " , quote pid
-    , ")"
+    , "A.PARENT_ID = ", quote cid, " AND B.NODE_ID = " , quote pid, ")"
     ]
     where cid   = eid who
           orgid = soid dep
@@ -161,4 +160,3 @@ queryParentsStmt who =
     " AND NODE_ID IN " ++ "(SELECT PARENT_ID FROM " ++ pathTab org ++" WHERE NODE_ID = ?)"
     where org   = oid who
           orgid = soid who
-
