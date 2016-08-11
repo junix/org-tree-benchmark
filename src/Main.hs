@@ -126,8 +126,8 @@ dropTabs'   orgs cn = mapM_ (\org -> dropOrgTabs'   org cn) orgs
 createTabs orgs = withConn (createTabs' orgs)
 dropTabs   orgs = withConn (dropTabs'   orgs)
 
-createAllTabs = createTabs [0..shardSize]
-dropAllTabs = dropTabs [0..shardSize]
+createAllTabs = createTabs [0..shardSize-1]
+dropAllTabs = dropTabs [0..shardSize-1]
 
 createOrgs orgs level subCnt = do
     cn <- conn
