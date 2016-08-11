@@ -39,7 +39,7 @@ new' [] conn = return 0
 new' es@(e:_) conn = do
     stmt <- prepare conn (istmt e)
     rs <- mapM (execute stmt . value) es
-    commit conn
+    --commit conn
     return (head rs)
 
 new :: [Entity] -> IO Integer
@@ -76,10 +76,11 @@ join' who dep conn = do
         isql= "INSERT INTO " ++ tab ++ " VALUES (?, ?,?,?,?)"
     run conn isql rec
     if null sql
-        then commit conn
+        then return () --commit conn
         else do
                 run conn sql []
-                commit conn
+                --commit conn
+                return ()
 
 joinIn who dep = withConn (join' who dep)
 
@@ -87,7 +88,7 @@ genChildren (Department org n) cnt = map (Department org . (n*10+)) [0..cnt-1]
 genEmployee (Department org n) cnt = map (Member org. (n*10+)) [0..cnt-1]
 
 itree' level ccnt parent@(Department org pid) conn
-    | pid > 10^level = return ()
+    | pid > 10^level = do { commit conn; return ()}
     | otherwise = do
         let cs = genChildren parent ccnt
         let es = genEmployee parent ccnt
