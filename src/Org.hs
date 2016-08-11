@@ -20,3 +20,5 @@ oid :: Entity -> Int
 oid (Member     org _) = org
 oid (Department org _) = org
 oid (SubCompany org _) = org
+
+soid = show.oid
