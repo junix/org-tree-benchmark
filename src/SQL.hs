@@ -15,7 +15,7 @@ pathTab orgId = "path"       ++ (show.shard) orgId
 
 data FieldType  = C Int | I
 data Constraint = NOT_NULL | KEY
-data Field      = CField String FieldType [Constraint] | Field String FieldType
+data Field      = CField String FieldType [Constraint]
 data FK         = FK { field   :: String
                      , refTab  :: String
                      , refName :: String
@@ -38,7 +38,6 @@ instance Show Constraint where
 
 instance Show Field where
    show (CField name fieldType cs) = name ++ " " ++ show fieldType ++ " " ++  (intercalate " " . map show $ cs)
-   show (Field name fieldType) = name ++ " " ++ show fieldType
 
 department :: ShardId -> Tab
 department shard = Tab { name   = "department" ++ show shard
