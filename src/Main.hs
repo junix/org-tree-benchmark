@@ -69,11 +69,11 @@ queryParent' who conn = do
 queryParent who = withConn (queryParent' who)
 
 join' who dep conn = do
-    let oid = toSql.soid $ who
-        rec = [oid, seid who, st2i who, seid dep, st2i dep]
+    let org = toSql.soid $ who
+        rec = [org, seid who, st2i who, seid dep, st2i dep]
         sql = joinPathSQL who dep
         tab = treeTab.oid $ dep
-        isql= "INSERT INTO " ++ tab ++ " VALUES (?,?,?,?)"
+        isql= "INSERT INTO " ++ tab ++ " VALUES (?, ?,?,?,?)"
     run conn isql rec
     if null sql
         then commit conn
