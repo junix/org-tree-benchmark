@@ -21,4 +21,4 @@ oid (Member     org _) = org
 oid (Department org _) = org
 oid (SubCompany org _) = org
 
-soid = 'o':show.oid
+soid e = ('o':).show.oid
