@@ -21,4 +21,5 @@ oid (Member     org _) = org
 oid (Department org _) = org
 oid (SubCompany org _) = org
 
-soid e = ('o':).show.oid
+soid :: Entity -> String
+soid = ('o':).show.oid
