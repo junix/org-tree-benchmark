@@ -42,7 +42,7 @@ instance Show Field where
 -- tables
 department :: ShardId -> Tab
 department shard = Tab { name   = "department" ++ show shard
-                       , fields = [ CField "ID"     (C 32)  [KEY]
+                       , fields = [ CField "ID"     (C 32)  [KEY     ]
                                   , CField "ORG_ID" (C 32)  [NOT_NULL]
                                   , CField "TYPE"   I       [NOT_NULL]
                                   ]
@@ -51,7 +51,7 @@ department shard = Tab { name   = "department" ++ show shard
 
 member :: ShardId -> Tab
 member shard = Tab { name   = "member" ++ show shard
-                   , fields = [ CField "ID"      (C 32) [KEY]
+                   , fields = [ CField "ID"      (C 32) [KEY     ]
                               , CField "ORG_ID"  (C 32) [NOT_NULL]
                               , CField "AGE"     I      [NOT_NULL]
                               ]
@@ -61,7 +61,7 @@ member shard = Tab { name   = "member" ++ show shard
 tree :: ShardId -> Tab
 tree shard = Tab { name   = "tree" ++ show shard
                  , fields = [ CField "ORG_ID"      (C 32) [NOT_NULL]
-                            , CField "NODE_ID"     (C 32) [NOT_NULL]
+                            , CField "NODE_ID"     (C 32) [KEY     ]
                             , CField "NODE_TYPE"   I      [NOT_NULL]
                             , CField "PARENT_ID"   (C 32) [NOT_NULL]
                             , CField "PARENT_TYPE" I      [NOT_NULL]
