@@ -111,7 +111,10 @@ sqlid2Id sid = read . filter (`elem` ['0'..'9']) $ s :: Integer
     where s =  fromSql sid :: String
 
 clear' orgId conn = do
-    let exps = map (("DELETE FROM "++) . ($orgId)) [pathTab, treeTab, depTab, memTab]
+    let exps = [ "DELETE FROM " ++ tab ++ " WHERE ORG_ID=" ++ quote orgId
+               | tabFun <- [pathTab, treeTab, depTab, memTab]
+               , let tab = tabFun orgId
+               ]
     mapM_ (\stmt -> run conn stmt []) exps
     commit conn
 
