@@ -4,7 +4,7 @@ import Database.HDBC
 import Org
 import Data.List (intercalate)
 
-shardSize = 100
+shardSize = 97
 
 shard orgId = orgId `rem` shardSize
 
