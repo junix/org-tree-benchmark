@@ -41,46 +41,50 @@ instance Show Field where
 
 -- tables
 department :: ShardId -> Tab
-department shard = Tab { name   = "department" ++ show shard
-                       , fields = [ CField "ID"     (C 32)  [KEY     ]
-                                  , CField "ORG_ID" (C 32)  [NOT_NULL]
-                                  , CField "TYPE"   I       [NOT_NULL]
-                                  ]
-                       , foreign_keys = []
-                       }
+department shard =
+    Tab { name   = "department" ++ show shard
+        , fields = [ CField "ID"     (C 32)  [KEY     ]
+                   , CField "ORG_ID" (C 32)  [NOT_NULL]
+                   , CField "TYPE"   I       [NOT_NULL]
+                   ]
+        , foreign_keys = []
+        }
 
 member :: ShardId -> Tab
-member shard = Tab { name   = "member" ++ show shard
-                   , fields = [ CField "ID"      (C 32) [KEY     ]
-                              , CField "ORG_ID"  (C 32) [NOT_NULL]
-                              , CField "AGE"     I      [NOT_NULL]
-                              ]
-                   , foreign_keys = []
-                   }
+member shard =
+    Tab { name   = "member" ++ show shard
+        , fields = [ CField "ID"      (C 32) [KEY     ]
+                   , CField "ORG_ID"  (C 32) [NOT_NULL]
+                   , CField "AGE"     I      [NOT_NULL]
+                   ]
+        , foreign_keys = []
+        }
 
 tree :: ShardId -> Tab
-tree shard = Tab { name   = "tree" ++ show shard
-                 , fields = [ CField "ORG_ID"      (C 32) [NOT_NULL]
-                            , CField "NODE_ID"     (C 32) [KEY     ]
-                            , CField "NODE_TYPE"   I      [NOT_NULL]
-                            , CField "PARENT_ID"   (C 32) [NOT_NULL]
-                            , CField "PARENT_TYPE" I      [NOT_NULL]
-                            ]
-                   , foreign_keys = [FK { field   = "PARENT_ID", refTab  = "department"++show shard, refName = "ID"}]
-                   }
+tree shard =
+    Tab { name   = "tree" ++ show shard
+        , fields = [ CField "ORG_ID"      (C 32) [NOT_NULL]
+                   , CField "NODE_ID"     (C 32) [KEY     ]
+                   , CField "NODE_TYPE"   I      [NOT_NULL]
+                   , CField "PARENT_ID"   (C 32) [NOT_NULL]
+                   , CField "PARENT_TYPE" I      [NOT_NULL]
+                   ]
+        , foreign_keys = [FK { field   = "PARENT_ID", refTab  = "department"++show shard, refName = "ID"}]
+        }
 
 path :: ShardId -> Tab
-path shard = Tab { name   = "path" ++ show shard
-                 , fields = [ CField "ORG_ID"      (C 32) [NOT_NULL]
-                            , CField "NODE_ID"     (C 32) [NOT_NULL]
-                            , CField "NODE_TYPE"   I      [NOT_NULL]
-                            , CField "PARENT_ID"   (C 32) [NOT_NULL]
-                            , CField "PARENT_TYPE" I      [NOT_NULL]
-                            ]
-                   , foreign_keys = [ FK { field   = "PARENT_ID", refTab  = "department"++show shard, refName = "ID" }
-                                    , FK { field   = "NODE_ID",   refTab  = "department"++show shard, refName = "ID" }
-                                    ]
-                   }
+path shard =
+    Tab { name   = "path" ++ show shard
+        , fields = [ CField "ORG_ID"      (C 32) [NOT_NULL]
+                   , CField "NODE_ID"     (C 32) [NOT_NULL]
+                   , CField "NODE_TYPE"   I      [NOT_NULL]
+                   , CField "PARENT_ID"   (C 32) [NOT_NULL]
+                   , CField "PARENT_TYPE" I      [NOT_NULL]
+                   ]
+        , foreign_keys = [ FK { field   = "PARENT_ID", refTab  = "department"++show shard, refName = "ID" }
+                         , FK { field   = "NODE_ID",   refTab  = "department"++show shard, refName = "ID" }
+                         ]
+         }
 
 ddlOf :: Tab -> String
 ddlOf (Tab { name = tabName, fields = fs, foreign_keys = fks}) =
