@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module SQL where
 import Database.HDBC
 import Org
