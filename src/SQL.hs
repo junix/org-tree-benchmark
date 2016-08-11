@@ -39,6 +39,7 @@ instance Show Constraint where
 instance Show Field where
    show (CField name fieldType cs) = name ++ " " ++ show fieldType ++ " " ++  (intercalate " " . map show $ cs)
 
+-- tables
 department :: ShardId -> Tab
 department shard = Tab { name   = "department" ++ show shard
                        , fields = [ CField "ID"     (C 32)  [KEY]
@@ -101,9 +102,9 @@ value :: Entity -> [SqlValue]
 value e@(Member _ id') = [seid e, (toSql.soid) e, toSql id']
 value e = [seid e, (toSql.soid) e, st2i e]
 
-istmt (Member     org _) = "INSERT INTO " ++ memTab org ++ " VALUES (?, ?, ?)"
-istmt (Department org _) = "INSERT INTO " ++ depTab org ++ " VALUES (?, ?, ?)"
-istmt (SubCompany org _) = "INSERT INTO " ++ depTab org ++ " VALUES (?, ?, ?)"
+insertStmt (Member     org _) = "REPLACE INTO " ++ memTab org ++ " VALUES (?, ?, ?)"
+insertStmt (Department org _) = "REPLACE INTO " ++ depTab org ++ " VALUES (?, ?, ?)"
+insertStmt (SubCompany org _) = "REPLACE INTO " ++ depTab org ++ " VALUES (?, ?, ?)"
 
 joinPathSQL (Member _ _) dep = ""
 joinPathSQL who dep

@@ -37,7 +37,7 @@ exe stmt args conn = do
 new' :: [Entity] -> Connection -> IO Integer
 new' [] conn = return 0
 new' es@(e:_) conn = do
-    stmt <- prepare conn (istmt e)
+    stmt <- prepare conn (insertStmt e)
     rs <- mapM (execute stmt . value) es
     commit conn
     return (head rs)
