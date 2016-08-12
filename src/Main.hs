@@ -1,3 +1,7 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+
 module Main where
 import Database.HDBC
 import Database.HDBC.MySQL
@@ -6,6 +10,7 @@ import NiceFork(parRun)
 import SplitR
 import Org
 import SQL
+import Text.InterpolatedString.Perl6 (qc,qq)
 
 createOrgTabs' orgId conn = do
     mapM_ (\s -> run conn s []) (ddl orgId)
@@ -73,7 +78,7 @@ join' who dep conn = do
         rec = [org, seid who, st2i who, seid dep, st2i dep]
         sql = joinPathSQL who dep
         tab = treeTab.oid $ dep
-        isql= "INSERT INTO " ++ tab ++ " VALUES (?, ?,?,?,?)"
+        isql= [qq| REPLACE INTO $tab VALUES (?,?,?,?,?) |]
     run conn isql rec
     if null sql
         then commit conn
@@ -86,7 +91,7 @@ mov' who dep conn = do
         rec = [org, seid who, st2i who, seid dep, st2i dep]
         sql = movPathSQL who dep
         tab = treeTab.oid $ dep
-        isql= "REPLACE INTO " ++ tab ++ " VALUES (?, ?,?,?,?)"
+        isql= [qq| REPLACE INTO $tab VALUES (?,?,?,?,?) |]
     run conn isql rec
     if null sql
         then commit conn
@@ -128,8 +133,9 @@ sqlid2Id sid = read . filter (`elem` ['0'..'9']) $ s :: Integer
 
 clear' :: Integer -> Connection -> IO ()
 clear' orgId conn = do
-    let exps = [ "DELETE FROM " ++ tab ++ " WHERE ORG_ID=" ++ (quote.i2soid) orgId
+    let exps = [ [qc| DELETE FROM {tab} WHERE ORG_ID = '{strOid}' |]
                | tab <- map ($orgId) [pathTab, treeTab, depTab, memTab]
+               , let strOid = i2soid orgId
                ]
     mapM_ (\stmt -> run conn stmt []) exps
     commit conn

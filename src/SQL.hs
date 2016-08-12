@@ -130,7 +130,9 @@ joinPathSQL who dep
              SELECT '{orgid}', '{cid}', {ctype}, '{pid}', {ptype}
              UNION
              SELECT ORG_ID, '{cid}', {ctype}, PARENT_ID, PARENT_TYPE FROM {ptab}
-             WHERE ORG_ID = '{orgid}' AND NODE_ID = '{pid}' AND NODE_TYPE = {ptype}
+                WHERE ORG_ID  = '{orgid}' AND
+                      NODE_ID = '{pid}'   AND
+                      NODE_TYPE = {ptype}
         |]
         where ptab  = pathTab.oid $ dep
               orgid = soid dep
@@ -189,13 +191,23 @@ movPathSQL who dep = concat
           ptype = (show.t2i) dep
 
 querySubCntStmt e@(Department orgId _) =
-    "SELECT COUNT(*) FROM " ++ treeTab orgId ++ " WHERE ORG_ID = " ++ (quote.soid) e ++
-    " AND NODE_ID IN " ++
-    "(SELECT NODE_ID FROM " ++ pathTab orgId ++ " WHERE PARENT_ID = ? AND NODE_ID != PARENT_ID)"
+    [qq| SELECT COUNT(*) FROM $treeTable WHERE
+            ORG_ID = $strOid AND
+            NODE_ID IN
+              (SELECT NODE_ID FROM $pathTable
+                WHERE PARENT_ID = ? AND NODE_ID != PARENT_ID)
+    |]
+    where treeTable = treeTab orgId
+          pathTable = pathTab orgId
+          strOid     = (quote.soid) e
 
 queryParentsStmt who =
-    "SELECT NODE_ID FROM " ++ treeTab org ++ " WHERE ORG_ID = " ++ quote orgid ++
-    " AND NODE_ID IN " ++ "(SELECT PARENT_ID FROM " ++ pathTab org ++" WHERE NODE_ID = ?)"
+    [qc| SELECT NODE_ID FROM {treeTable}
+         WHERE ORG_ID = '{orgid}' AND
+               NODE_ID IN (SELECT PARENT_ID FROM  {pathTable} WHERE NODE_ID = ?)
+    |]
     where org   = oid who
+          treeTable = treeTab org
+          pathTable = pathTab org
           orgid = soid who
 
