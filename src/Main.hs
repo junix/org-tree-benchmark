@@ -81,7 +81,22 @@ join' who dep conn = do
                 run conn sql []
                 commit conn
 
+mov' who dep conn = do
+    let org = toSql.soid $ who
+        rec = [org, seid who, st2i who, seid dep, st2i dep]
+        sql = movPathSQL who dep
+        tab = treeTab.oid $ dep
+        isql= "REPLACE INTO " ++ tab ++ " VALUES (?, ?,?,?,?)"
+    run conn isql rec
+    if null sql
+        then commit conn
+        else do
+                run conn sql []
+                commit conn
+
 joinIn who dep = withConn (join' who dep)
+
+mov who dep = withConn (mov' who dep)
 
 genChildren (Department org n) cnt = map (Department org . (n*10+)) [0..cnt-1]
 genEmployee (Department org n) cnt = map (Member org. (n*10+)) [0..cnt-1]

@@ -1,8 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ExtendedDefaultRules #-}
+
 module SQL where
 import Database.HDBC
 import Org
 import Data.List (intercalate)
+import Text.InterpolatedString.Perl6 (qc,qq)
 
 shardSize = 97
 
@@ -12,6 +16,10 @@ depTab  orgId = "department" ++ (show.shard) orgId
 memTab  orgId = "member"     ++ (show.shard) orgId
 treeTab orgId = "tree"       ++ (show.shard) orgId
 pathTab orgId = "path"       ++ (show.shard) orgId
+
+pathTabOf :: Entity -> String
+pathTabOf = pathTab.oid
+
 
 data FieldType  = C Int | I
 data Constraint = NOT_NULL | KEY
@@ -88,11 +96,13 @@ path shard =
 
 ddlOf :: Tab -> String
 ddlOf (Tab { name = tabName, fields = fs, foreign_keys = fks}) =
-        "CREATE TABLE " ++ tabName ++ " (" ++
-        (intercalate "," . map show $ fs) ++
-        concatMap fref fks ++ ")"
-    where fref (FK { field = f, refTab = t, refName = n}) =
-            ",FOREIGN KEY (" ++ f ++ ") REFERENCES " ++ t ++ " (" ++ n ++ ")"
+        [qc| CREATE TABLE {tabName} (
+                {intercalate "," . map show $ fs}
+                {concatMap fref fks}
+             )
+        |]
+    where fref :: FK -> String
+          fref (FK { field = f, refTab = t, refName = n}) = [qc|, FOREIGN KEY ({f}) REFERENCES {t}  ({n}) |]
 
 ddl orgId = map ddlOf. map ($orgId) $ [department, member, tree, path]
 
@@ -106,20 +116,23 @@ value :: Entity -> [SqlValue]
 value e@(Member _ id') = [seid e, (toSql.soid) e, toSql id']
 value e = [seid e, (toSql.soid) e, st2i e]
 
-insertStmt (Member     org _) = "REPLACE INTO " ++ memTab org ++ " VALUES (?, ?, ?)"
-insertStmt (Department org _) = "REPLACE INTO " ++ depTab org ++ " VALUES (?, ?, ?)"
-insertStmt (SubCompany org _) = "REPLACE INTO " ++ depTab org ++ " VALUES (?, ?, ?)"
+insertStmt :: Entity -> String
+insertStmt (Member     org _) = [qc| REPLACE INTO {memTab org} VALUES (?, ?, ?) |]
+insertStmt (Department org _) = [qc| REPLACE INTO {depTab org} VALUES (?, ?, ?) |]
+insertStmt (SubCompany org _) = [qc| REPLACE INTO {depTab org} VALUES (?, ?, ?) |]
 
+joinPathSQL :: Entity -> Entity -> String
 joinPathSQL (Member _ _) dep = ""
 joinPathSQL who dep
     | oid who /= oid dep = ""
-    | otherwise = concat
-        [ "INSERT INTO ", ptab, " "
-        , "SELECT ", mkFields [quote orgid, quote cid, ctype, quote pid, ptype], " UNION "
-        , "SELECT ", mkFields ["ORG_ID", quote cid, ctype, "PARENT_ID", "PARENT_TYPE"], " FROM ", ptab, " "
-        , "WHERE ", eqNodeExp orgid pid ptype
-        ]
-        where ptab = pathTab.oid $ dep
+    | otherwise =
+        [qc| INSERT INTO {ptab}
+             SELECT '{orgid}', '{cid}', {ctype}, '{pid}', {ptype}
+             UNION
+             SELECT ORG_ID, '{cid}', {ctype}, PARENT_ID, PARENT_TYPE FROM {ptab}
+             WHERE ORG_ID = '{orgid}' AND NODE_ID = '{pid}' AND NODE_TYPE = {ptype}
+        |]
+        where ptab  = pathTab.oid $ dep
               orgid = soid dep
               cid   = eid who
               ctype = (show.t2i) who
@@ -129,23 +142,48 @@ joinPathSQL who dep
 mkFields :: [String] -> String
 mkFields = intercalate ","
 
-eqNodeExp   orgid nid ntype =  " ORG_ID = " ++ quote orgid ++ " AND NODE_ID = "   ++ quote nid ++ " AND NODE_TYPE = " ++ ntype
-eqParentExp orgid nid ntype =  " ORG_ID = " ++ quote orgid ++ " AND PARENT_ID = " ++ quote nid ++ " AND PARENT_TYPE = " ++ ntype
+eqNodeExp :: String -> String -> String -> String
+eqNodeExp orgid nid ntype =  [qc| ORG_ID = {quote orgid} AND NODE_ID = {quote nid} AND NODE_TYPE = {ntype} |]
+
+eqParentExp :: String -> String -> String -> String
+eqParentExp orgid nid ntype =  [qc| ORG_ID = {quote orgid} AND PARENT_ID = {quote nid} AND PARENT_TYPE = {ntype} |]
 
 quote :: String -> String
 quote s = '\'' : s ++ "'"
 
-movPath (Member _ _) dep = ""
-movPath who dep = concat
-    [ "INSERT INTO PATH ( "
-    , "VALUES (", mkFields [quote cid, ctype, quote pid, ptype], ") UNION "
-    , "(SELECT ", mkFields [quote cid, ctype, "PARENT_ID", "PARENT_TYPE"], " FROM PATH WHERE ", eqNodeExp   orgid pid ptype, ") UNION "
-    , "(SELECT ", mkFields ["NODE_ID", "NODE_TYPE", quote pid, ptype],     " FROM PATH WHERE ", eqParentExp orgid cid ctype, ") UNION "
-    , "(SELECT ", mkFields ["A.NODE_ID","A.NODE_TYPE", "B.PARENT_ID", "B.PARENT_TYPE"],  " FROM PATH A, PATH B WHERE "
-    , "A.PARENT_ID = ", quote cid, " AND B.NODE_ID = " , quote pid, ")"
+{-
+movPathSQL1 (Member _ _) dep = ""
+movPathSQL1 who dep = concat
+    [ "DELETE FROM ", tab, " WHERE "
+    , "(NODE_ID = ", quote cid, " OR NODE_ID IN "
+    , "(SELECT NODE_ID FROM ", tab, " WHERE PARENT_ID = ", quote cid, ")) AND "
+    , "PARENT_ID IN (SELECT PARENT FROM pATH WHERE iD = X)
+]
+    where cid   = eid who
+          tab = pathTabOf who
+          orgid = soid dep
+          qoid = quote orgid
+          ctype = (show.t2i) who
+          pid   = eid dep
+          ptype = (show.t2i) dep
+-}
+
+movPathSQL (Member _ _) dep = ""
+movPathSQL who dep = concat
+    [ "INSERT INTO ", tab
+    , "SELECT ", mkFields [qoid, quote cid, ctype, quote pid, ptype], " UNION "
+    , "SELECT ", mkFields [qoid, quote cid, ctype, "PARENT_ID", "PARENT_TYPE"], " FROM "
+    , tab, " WHERE ", eqNodeExp orgid pid ptype, " UNION "
+    , "SELECT ", mkFields [qoid, "NODE_ID", "NODE_TYPE", quote pid, ptype]
+    , " FROM ", tab, " WHERE ", eqParentExp orgid cid ctype, " UNION "
+    , "SELECT ", mkFields [qoid, "A.NODE_ID","A.NODE_TYPE", "B.PARENT_ID", "B.PARENT_TYPE"]
+    , " FROM ",tab," A, ",tab, " B WHERE "
+    , "A.PARENT_ID = ", quote cid, " AND B.NODE_ID = " , quote pid, ""
     ]
     where cid   = eid who
+          tab = pathTabOf who
           orgid = soid dep
+          qoid = quote orgid
           ctype = (show.t2i) who
           pid   = eid dep
           ptype = (show.t2i) dep
@@ -160,3 +198,4 @@ queryParentsStmt who =
     " AND NODE_ID IN " ++ "(SELECT PARENT_ID FROM " ++ pathTab org ++" WHERE NODE_ID = ?)"
     where org   = oid who
           orgid = soid who
+
